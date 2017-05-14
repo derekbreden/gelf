@@ -41,39 +41,54 @@ check_ls()
 var http = require('http')
 var server = http.createServer((req, res) => {
   res.end(`
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
     <style>
       * { box-sizing: border-box;}
-      body { padding: 0; margin: 0;}
-      iframe { width: 100%; height: 50%;
-      border: 10px inset #faa;
-      border-top: 20px ridge #faa;}
+      body { padding: 0; margin: 0;
+        overflow: hidden;}
+      iframe { width: 100%; height: 50%;}
         
       editor, console, editor > htmlarea { padding: 10px;
-        font-family: Courier New; font-size: 12px; font-weight: 700;}
+        font-family: Courier New; font-size: 12px; font-weight: 700;
+        color: #00326c; }
       editor, console { position: absolute;
-        opacity: .85;
-        background: #FFF9F9;
-        border: 10px inset #faa;
-        border-bottom: 20px ridge #faa;
+        background: #f0f9ff;
+        border: 20px ridge #7ab3f5;
         bottom: 0px; left: 0px;
         width: calc(65% - 0px);
         height: calc(50% - 0px);
         display: flex;}
-      editor { }
+      editor { border-right: 10px inset #7ab3f5;}
       console { left: auto; right: 0px;
-        width: calc(35% - 0px);}
+        border-left: 10px inset #7ab3f5;
+        width: calc(35% - 0px);
+        background: #f0f9ff; border-color: #7ab3f5;}
       editor > *{ flex: 1;}
       editor > htmlarea { resize: none;
         white-space: pre;
-        color: #500;
+        color: #005;
         background: #FFF;
-        border-left: 1px solid #faa;
+        border-left: 1px solid #7ab3f5;
         margin-top: -10px; margin-right: -10px; margin-bottom: -10px;}
-      editor > htmlarea > s1 { color: #900;}
-      editor > htmlarea > s2 { color: #b33;}
+      editor > htmlarea > s1 { color: #006eee;}
+      editor > htmlarea > s2 { color: #004fab;}
       editor > htmlarea > s3 { color: #666;}
       editor > tree { flex: .5;}
+      @media screen and (max-width: 480px) {
+        editor, console { position: relative;
+          border-left: 20px ridge #7ab3f5;
+          border-right: 20px ridge #7ab3f5;
+          display: block;}
+        iframe, editor, console { height: auto; width: auto;}
+        body { display: flex; flex-direction: column;
+          height: 200%;
+          overflow: scroll;}
+        body > * { flex: 1; }
+      }
     </style>
+    </head>
+    <body>
     <iframe></iframe>
     <editor>
       <tree>gelf /<br>&nbsp; baz.py</tree>
@@ -84,6 +99,7 @@ var server = http.createServer((req, res) => {
     <console>$ &#9608;</console>
     <script> var h = window.location.hostname;
     document.querySelector('iframe').src='http://'+h+':${app_port}'</script>
+    </body>
 `)
 })
 server.listen(port, () => {})
