@@ -42,23 +42,26 @@ var http = require('http')
 var server = http.createServer((req, res) => {
   res.end(`
     <style>
-      * { box-sizing: border-box; }
-      body { padding: 0;}
-      iframe { width: 100%; height: 100%;
-        border: 0;}
+      * { box-sizing: border-box;}
+      body { padding: 0; margin: 0;}
+      iframe { width: 100%; height: 50%;
+      border: 10px inset #faa;
+      border-top: 20px ridge #faa;}
         
       editor, console, editor > htmlarea { padding: 10px;
         font-family: Courier New; font-size: 12px; font-weight: 700;}
       editor, console { position: absolute;
         opacity: .85;
         background: #FFF9F9;
-        border: 10px #faa; border-style: outset;
-        bottom: 20px; left: 20px;
-        width: calc(65% - 30px);
-        height: calc(50% - 20px);
+        border: 10px inset #faa;
+        border-bottom: 20px ridge #faa;
+        bottom: 0px; left: 0px;
+        width: calc(65% - 0px);
+        height: calc(50% - 0px);
         display: flex;}
-      console { left: auto; right: 20px;
-        width: calc(35% - 30px);}
+      editor { }
+      console { left: auto; right: 0px;
+        width: calc(35% - 0px);}
       editor > *{ flex: 1;}
       editor > htmlarea { resize: none;
         white-space: pre;
@@ -72,7 +75,9 @@ var server = http.createServer((req, res) => {
       editor > tree { flex: .5;}
     </style>
     <iframe></iframe>
-    <editor><tree>gelf /<br>&nbsp; baz.py</tree><htmlarea>class <s1>Foo</s1>
+    <editor>
+      <tree>gelf /<br>&nbsp; baz.py</tree>
+      <htmlarea contenteditable="true">class <s1>Foo</s1>
   def <s1>bar</s1>():
     <s3># just passing by</s3>
     <s2>pass</s2></htmlarea></editor>

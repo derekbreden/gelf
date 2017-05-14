@@ -168,6 +168,7 @@ var server = http.createServer((req, res) => {
   } else if (req.method == 'GET' && req.url == '/css') {
     var fs_req = fs.createReadStream(`${__dirname}/atlaskit.css`)
     fs_req.pipe(res)
+    rlog(sigify('stop'), 4)
   } else {
     res.end(`<!doctype html><html>
   <head>
