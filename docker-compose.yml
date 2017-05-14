@@ -1,0 +1,15 @@
+postgres:
+  image: postgres:alpine
+  command: postgres -c logging_collector=on -c log_destination=stderr -c max_connections=200
+  environment:
+    - POSTGRES_DB=gelf
+    - POSTGRES_USER=gelf
+    - POSTGRES_PASSWORD=password1
+  ports:
+    - 5432:5432
+gelf:
+  build: ./app
+  volumes:
+    - "./app:/app"
+  ports:
+    - "3000:3000"

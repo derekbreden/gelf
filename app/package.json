@@ -1,0 +1,8 @@
+{
+  "name": "gelf",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+  }
+}
