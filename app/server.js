@@ -1,8 +1,11 @@
+#!/usr/bin/env node
+
 require('crypto')
 require('http')
 var crypto = require('crypto')
 var http = require('http')
 var fs = require('fs')
+var port = process.env.PORT || 3000
 
 // --------------------------------------------------------------
 // Async util
@@ -10,22 +13,22 @@ var fs = require('fs')
 //        promise like thing
 // --------------------------------------------------------------
 // Usage:
-//        and(function(cb){
+//        and((cb) => {
 //          console.log('hello')
 //          setTimeout(cb, 500)
-//        }).and(function(){
+//        }).and(() => {
 //          console.log('world')
 //        })
 //
-var and = function(fn_1){
+var and = (fn_1) => {
   var self = {}
-  fn_1(function(){
+  fn_1(() => {
     if (self.fn_2)
       self.fn_2(self.all_finished)
     else
       self.fn_1_finished = true})
-  self.and = function(fn_2){
-    return and(function(all_finished){
+  self.and = (fn_2) => {
+    return and((all_finished) => {
       if (fn_2) {
         if (self.fn_1_finished) {
           fn_2(all_finished)}
@@ -44,24 +47,24 @@ var and = function(fn_1){
 //        parallel async cb
 // --------------------------------------------------------------
 // Usage:
-//        all([function(cb){
+//        all([(cb) => {
 //          console.log('he')
 //          setTimeout(cb, 100)
-//        },function(cb){
+//        },(cb) => {
 //          console.log('llo')
 //          setTimeout(cb, 500)
-//        }], function(){
+//        }], () => {
 //          console.log('world')
 //        })
 //
-var all = function(arr, cb){
+var all = (arr, cb) => {
   var to_finish = arr.length
-  var check_if_done = function(){
+  var check_if_done = () => {
     to_finish--
     if(to_finish == 0)
       cb()
   }
-  arr.forEach(function(cb){
+  arr.forEach((cb) => {
     cb(check_if_done)
   })
 }
@@ -74,15 +77,15 @@ var all = function(arr, cb){
 //        buffers a response and calls back
 // --------------------------------------------------------------
 // Usage:
-//        stream_to_cb(req, function(body){ success(body) })
+//        stream_to_cb(req, (body) => { success(body) })
 //
-var stream_to_cb = function(stream, cb) {
+var stream_to_cb = (stream, cb) => {
   var body = []
-  stream.on('data', function(chunk) {
+  stream.on('data', (chunk) => {
     body.push(chunk)
-  }).on('error', function(chunk) {
+  }).on('error', (chunk) => {
     body.push(chunk)
-  }).on('end', function() {
+  }).on('end', () => {
     body = Buffer.concat(body).toString()
     cb(body)
   })
@@ -99,17 +102,17 @@ var stream_to_cb = function(stream, cb) {
 //        success('Good thing')
 //
 console._log = console.log
-console.log = function(msg, color){
+console.log = (msg, color) => {
   if (!color) color = '0;31m'
   if (typeof color == 'function') color = color()
   if (typeof msg != 'string') msg = dump(msg)
   var dt =(new Date()+'').substr(4,20)
-  console._log('\033[0;36m' + dt + '  \033[0m\033[' + color + '' + msg + '\033[0m')
+  console._log('\033[0;36m' + dt + '  \033[0m\033[' + color + '' + msg + '\033[0m\033[0m')
 }
-var log_factory = function(color){ return function(msg){ console.log(msg, color) } }
+var log_factory = (color) => { return (msg) => { console.log(msg, color) } }
 var log_alternator = 0
-var _log = log_factory(function(){return log_alternator ? '0;37m' : '1;38m'})
-var log = function(x, y){
+var _log = log_factory(() => {return log_alternator ? '0;37m' : '1;38m'})
+var log = (x, y) => {
   y ? (log_alternator ? log_alternator-- : log_alternator++) : ''
   x ? _log(x) : ''
 }
@@ -118,23 +121,23 @@ var success = log_factory('1;32m')
 var alert = log_factory('1;35m')
 var warn = log_factory('1;33m')
 var date_len = (new Date()+'[]   ').length
-var indent = function(what_for, tabs, y){
+var indent = (what_for, tabs, y) => {
   var l = what_for.length
   return what_for + spaces(Math.abs(tabs - l), y || ' ')
 }
-var spaces = function(x, y){ return new Array(x).join(y || ' ') }
-var dump = function(obj){
+var spaces = (x, y) => { return new Array(x).join(y || ' ') }
+var dump = (obj) => {
   try{ return JSON.stringify(obj, true, '  ').replace(/\n/g, '\n' + spaces(date_len)) }catch(e){}
   return to_log = Object.keys(obj)
-                    .filter(function(k){ return !!(obj[k]) })
-                    .map(function(k){
+                    .filter((k) => { return !!(obj[k]) })
+                    .map((k) => {
                       var v = obj[k]
                       if (typeof v != 'function') try{ v = JSON.stringify(v, true, '  ') }catch(e){}
                       v = v.toString().replace(/\n/g, '\n' + spaces(date_len + 20))
                       return indent(k + ':', 20) + v
                     }).join('\n' + spaces(date_len))
 }
-// process.on('uncaughtException', function(err) { error(err) })
+process.on('uncaughtException', (err) => { error(err) })
 
 
 
@@ -146,16 +149,15 @@ var dump = function(obj){
 //          res.end('world')
 //          success(sigify('responded'))
 //
-var port = process.env.PORT || 3000
-var server = http.createServer(function(req, res){
+var server = http.createServer((req, res) => {
   var hash = crypto.createHash('md5').update(Math.random()+'').digest('hex').substr(0,4)
-  var sigify = function(x){
+  var sigify = (x) => {
     return indent(x, 10) + indent(req.method, 10) + indent(req.url, 60)
   }
-  rlog = function(msg, i, j){ log(hash + spaces(i || 22) + msg, j) }
+  rlog = (msg, i, j) => { log(hash + spaces(i || 22) + msg, j) }
   rlog(sigify('start'), 4, 1)
   if (req.method == 'POST') {
-    stream_to_cb(req, function(body){
+    stream_to_cb(req, (body) => {
       rlog(indent('body ', 14) + body)
       res.end(body)
       rlog(sigify('stop'), 4)
@@ -163,22 +165,9 @@ var server = http.createServer(function(req, res){
   } else if (req.method == 'GET' && req.url == '/healthcheck') {
     res.end('Ok')
     rlog(sigify('stop'), 4)
-  // } else if (req.method == 'GET' && req.url == '/js') {
-  //   var my_dir = `${__dirname}/../atlaskit-starter/build/static/js`
-  //   fs.readdir(my_dir, {}, function(e, versions){
-  //     fs.readFile(`${my_dir}/${versions[0]}`, {}, function(e, content){
-  //       content = content.toString().substr(0,content.length - `/*# sourceMappingURL=${versions[1]}*/`.length)
-  //       res.end(content)
-  //     })
-  //   })
-  // } else if (req.method == 'GET' && req.url == '/css') {
-  //   var my_dir = `${__dirname}/../atlaskit-starter/build/static/css`
-  //   fs.readdir(my_dir, {}, function(e, versions){
-  //     fs.readFile(`${my_dir}/${versions[0]}`, {}, function(e, content){
-  //       content = content.toString().substr(0,content.length - `/*# sourceMappingURL=${versions[1]}*/`.length)
-  //       res.end(content)
-  //     })
-  //   })
+  } else if (req.method == 'GET' && req.url == '/css') {
+    var fs_req = fs.createReadStream(`${__dirname}/atlaskit.css`)
+    fs_req.pipe(res)
   } else {
     res.end(`<!doctype html><html>
   <head>
@@ -186,20 +175,35 @@ var server = http.createServer(function(req, res){
     <title>Gelf</title>
   </head>
   <body>
-    <div id="app-root"></div>
-    <script src="/js"></script>
+  <ak-grid>
+  <ak-grid-column size="8">
+    <h1>Main heading</h1>
+    <p>foo.</p>
+  </ak-grid-column>
+  <ak-grid-column size="4">
+    <h2>Sidebar</h2>
+    <p>nope!</p>
+  </ak-grid-column>
+  <svg focusable="false"><use xlink:href="#ak-icon-addon" /></svg>
+  <ak-grid-column>
+    <h2>Content below which takes up remaining space</h2>
+    <p>
+      not latin
+    </p>
+  </ak-grid-column>
+</ak-grid>
   </body>
 </html>`)
     rlog(sigify('stop'), 4)
   }
 
 })
-server.listen(port, function(err){
+server.listen(port, (err) => {
   if (err) error(err)
-  log('Server started')
+  log(`Server started on port ${port}`)
   server.emit('listen')
-}).on('error', function(err){
-  error('capture')
+}).on('error', (err) => {
+  error(err)
 })
 log('Server starting')
 
@@ -213,7 +217,7 @@ log('Server starting')
 var test_i = 1
 var passed = 0
 var failed = 0
-var assert = function(truthy, y, z){
+var assert = (truthy, y, z) => {
   var x = indent(test_i+' ', 10, '.')
   y = indent(' '+y+' ', 50, '.')
   if (truthy) {
@@ -221,26 +225,26 @@ var assert = function(truthy, y, z){
     passed++
   } else {
     error('✘ ' + x + indent(' FAILED ', 20, '.') + y)
-    z.forEach(function(z_msg){error(z_msg)})
+    z.forEach((z_msg) => {error(z_msg)})
     failed++
   }
   test_i++
 }
-var prepare_assert_path_cb = function(path, cb, method, data){
+var prepare_assert_path_cb = (path, cb, method, data) => {
   var req = http.request({
     port: port,
     method: method || 'GET',
     path: path,
     headers: {'User-agent': 'gelf test'}
-  }, function(res){
+  }, (res) => {
     stream_to_cb(res, cb)
   })
   req.on('error', cb)
   if (data) req.write(data)
   req.end()
 }
-var assert_path_body = function(path, body_to_assert, cb, method, data){
-  prepare_assert_path_cb(path, function(body){
+var assert_path_body = (path, body_to_assert, cb, method, data) => {
+  prepare_assert_path_cb(path, (body) => {
     assert(
       body == body_to_assert, path,
       ['Expected: ' + body_to_assert, 'Got: ' + body]
@@ -254,34 +258,34 @@ var assert_path_body = function(path, body_to_assert, cb, method, data){
 // Tests
 // --------------------------------------------------------------
 // Usage:
-//        }).and(function(cb){
+//        }).and((cb) => {
 //          assert_path_body('/healthcheck', 'Ok', cb)
 //
-and(function(cb){
+and((cb) => {
   server.on('listen', cb)
-}).and(function(cb){
+}).and((cb) => {
   log('Tests started')
   assert_path_body('/healthcheck', 'Ok', cb)
-}).and(function(cb){
+}).and((cb) => {
   assert_path_body('/xss', 'Okey', cb, 'POST', 'Okey')
-}).and(function(cb){
-  server.on('close', function(){
-    assert_path_body('/server-down', 'Error: connect ECONNREFUSED 127.0.0.1:3000', cb)
+}).and((cb) => {
+  server.on('close', () => {
+    assert_path_body('/server-down', `Error: connect ECONNREFUSED 127.0.0.1:${port}`, cb)
   })
   server.close()
-}).and(function(cb){
-  server.listen(port, function(){
+}).and((cb) => {
+  server.listen(port, () => {
     assert_path_body('/healthcheck', 'Ok', cb)
   })
 // SKIP need to make less noisy
-// }).and(function(cb){
-//   all(new Array(20).join('.').split('.').map(function(){
-//      return function(inner_cb){
+// }).and((cb) => {
+//   all(new Array(20).join('.').split('.').map(() => {
+//      return (inner_cb) => {
 //        assert_path_body('/healthcheck', 'Ok', inner_cb)
 //      }
 //    }), cb)
-}).and(function(cb){
-  good_or_bad = function(x, y){ return failed ? error(y || x) : success(x) }
+}).and((cb) => {
+  good_or_bad = (x, y) => { return failed ? error(y || x) : success(x) }
   success(spaces(80, '.'))
   good_or_bad(spaces(13) + 'PASSED', spaces(13) + 'FAILED')
   success(spaces(23) + indent('passed', 14) + passed + '/' + (test_i - 1))
