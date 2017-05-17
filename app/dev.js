@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-var child_process = require('child_process')
-var fs = require('fs')
-var port = process.env.PORT || 3000
-var app_port = process.env.APP_PORT || 3002
+const child_process = require('child_process')
+const fs = require('fs')
+const port = process.env.PORT || 3000
+const app_port = process.env.APP_PORT || 3002
 
-var ps = false;
-var create_new_ps = () => {
+let ps = false;
+const create_new_ps = () => {
   if (ps) ps.kill('SIGKILL')
-  var env = Object.create( process.env )
+  let env = Object.create( process.env )
   env['PORT'] = `${app_port}`
   ps = child_process.spawn(`${__dirname}/server.js`, {env: env})
   ps.stdout.on('data', (data) => {
@@ -23,8 +23,8 @@ var create_new_ps = () => {
     if (code) console.log(`EXITED: ${code}`)
   })
 }
-var last_result = ''
-var check_ls = () => {
+let last_result = ''
+const check_ls = () => {
   child_process.exec(`ls -al ${__dirname}`, (error, stdout, stderr) => {
     if (last_result !== stdout) {
       create_new_ps()
@@ -38,37 +38,35 @@ var check_ls = () => {
 check_ls()
 
 
-var http = require('http')
-var server = http.createServer((req, res) => {
+const http = require('http')
+let server = http.createServer((req, res) => {
   res.end(`
     <head>
     <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
     <style>
       * { box-sizing: border-box;}
+      *:focus { outline: 0;}
       body { padding: 0; margin: 0;
         overflow: hidden;}
-      iframe { width: 100%; height: 50%;}
+      iframe { width: 100%; height: 50%; border: 0;}
         
       editor, console, editor > htmlarea { padding: 10px;
         font-family: Courier New; font-size: 12px; font-weight: 700;
         color: #00326c; }
       editor, console { position: absolute;
         background: #f0f9ff;
-        border: 20px ridge #7ab3f5;
+        border-top: 1px solid #7ab3f5;
         bottom: 0px; left: 0px;
-        width: calc(65% - 0px);
-        height: calc(50% - 0px);
+        width: 65%; height: 50%;
         display: flex;}
-      editor { border-right: 10px inset #7ab3f5;}
+      editor { border-right: 1px solid #7ab3f5;}
       console { left: auto; right: 0px;
-        border-left: 10px inset #7ab3f5;
-        width: calc(35% - 0px);
-        background: #f0f9ff; border-color: #7ab3f5;}
+        width: 35%; }
       editor > *{ flex: 1;}
       editor > htmlarea { resize: none;
         white-space: pre;
         color: #005;
-        background: #FFF;
+        background: #f9ffff;
         border-left: 1px solid #7ab3f5;
         margin-top: -10px; margin-right: -10px; margin-bottom: -10px;}
       editor > htmlarea > s1 { color: #006eee;}
@@ -76,12 +74,11 @@ var server = http.createServer((req, res) => {
       editor > htmlarea > s3 { color: #666;}
       editor > tree { flex: .5;}
       @media screen and (max-width: 480px) {
-        editor, console { position: relative;
-          border-left: 20px ridge #7ab3f5;
-          border-right: 20px ridge #7ab3f5;
-          display: block;}
+        editor, console { position: relative;}
         iframe, editor, console { height: auto; width: auto;}
+        editor { border-right: 0; }
         body { display: flex; flex-direction: column;
+          align-content: center;
           height: 200%;
           overflow: scroll;}
         body > * { flex: 1; }

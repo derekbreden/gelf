@@ -1,11 +1,9 @@
 #!/usr/bin/env node
 
-require('crypto')
-require('http')
-var crypto = require('crypto')
-var http = require('http')
-var fs = require('fs')
-var port = process.env.PORT || 3000
+const crypto = require('crypto')
+const http = require('http')
+const fs = require('fs')
+const port = process.env.PORT || 3000
 
 // --------------------------------------------------------------
 // Async util
@@ -20,8 +18,8 @@ var port = process.env.PORT || 3000
 //          console.log('world')
 //        })
 //
-var and = (fn_1) => {
-  var self = {}
+const and = (fn_1) => {
+  let self = {}
   fn_1(() => {
     if (self.fn_2)
       self.fn_2(self.all_finished)
@@ -57,9 +55,9 @@ var and = (fn_1) => {
 //          console.log('world')
 //        })
 //
-var all = (arr, cb) => {
-  var to_finish = arr.length
-  var check_if_done = () => {
+const all = (arr, cb) => {
+  let to_finish = arr.length
+  let check_if_done = () => {
     to_finish--
     if(to_finish == 0)
       cb()
@@ -79,8 +77,8 @@ var all = (arr, cb) => {
 // Usage:
 //        stream_to_cb(req, (body) => { success(body) })
 //
-var stream_to_cb = (stream, cb) => {
-  var body = []
+const stream_to_cb = (stream, cb) => {
+  let body = []
   stream.on('data', (chunk) => {
     body.push(chunk)
   }).on('error', (chunk) => {
@@ -106,32 +104,32 @@ console.log = (msg, color) => {
   if (!color) color = '0;31m'
   if (typeof color == 'function') color = color()
   if (typeof msg != 'string') msg = dump(msg)
-  var dt =(new Date()+'').substr(4,20)
+  let dt =(new Date()+'').substr(4,20)
   console._log('\033[0;36m' + dt + '  \033[0m\033[' + color + '' + msg + '\033[0m\033[0m')
 }
-var log_factory = (color) => { return (msg) => { console.log(msg, color) } }
-var log_alternator = 0
-var _log = log_factory(() => {return log_alternator ? '0;37m' : '1;38m'})
-var log = (x, y) => {
+const log_factory = (color) => { return (msg) => { console.log(msg, color) } }
+let log_alternator = 0
+const _log = log_factory(() => {return log_alternator ? '0;37m' : '1;38m'})
+const log = (x, y) => {
   y ? (log_alternator ? log_alternator-- : log_alternator++) : ''
   x ? _log(x) : ''
 }
-var error = log_factory('1;31m')
-var success = log_factory('1;32m')
-var alert = log_factory('1;35m')
-var warn = log_factory('1;33m')
-var date_len = (new Date()+'[]   ').length
-var indent = (what_for, tabs, y) => {
-  var l = what_for.length
+const error = log_factory('1;31m')
+const success = log_factory('1;32m')
+const alert = log_factory('1;35m')
+const warn = log_factory('1;33m')
+const date_len = (new Date()+'[]   ').length
+const indent = (what_for, tabs, y) => {
+  let l = what_for.length
   return what_for + spaces(Math.abs(tabs - l), y || ' ')
 }
-var spaces = (x, y) => { return new Array(x).join(y || ' ') }
-var dump = (obj) => {
+const spaces = (x, y) => { return new Array(x).join(y || ' ') }
+const dump = (obj) => {
   try{ return JSON.stringify(obj, true, '  ').replace(/\n/g, '\n' + spaces(date_len)) }catch(e){}
   return to_log = Object.keys(obj)
                     .filter((k) => { return !!(obj[k]) })
                     .map((k) => {
-                      var v = obj[k]
+                      let v = obj[k]
                       if (typeof v != 'function') try{ v = JSON.stringify(v, true, '  ') }catch(e){}
                       v = v.toString().replace(/\n/g, '\n' + spaces(date_len + 20))
                       return indent(k + ':', 20) + v
@@ -149,9 +147,9 @@ process.on('uncaughtException', (err) => { error(err) })
 //          res.end('world')
 //          success(sigify('responded'))
 //
-var server = http.createServer((req, res) => {
-  var hash = crypto.createHash('md5').update(Math.random()+'').digest('hex').substr(0,4)
-  var sigify = (x) => {
+let server = http.createServer((req, res) => {
+  let hash = crypto.createHash('md5').update(Math.random()+'').digest('hex').substr(0,4)
+  let sigify = (x) => {
     return indent(x, 10) + indent(req.method, 10) + indent(req.url, 60)
   }
   rlog = (msg, i, j) => { log(hash + spaces(i || 22) + msg, j) }
@@ -166,7 +164,7 @@ var server = http.createServer((req, res) => {
     res.end('Ok')
     rlog(sigify('stop'), 4)
   } else if (req.method == 'GET' && req.url == '/css') {
-    var fs_req = fs.createReadStream(`${__dirname}/atlaskit.css`)
+    let fs_req = fs.createReadStream(`${__dirname}/atlaskit.css`)
     fs_req.pipe(res)
     rlog(sigify('stop'), 4)
   } else {
@@ -215,11 +213,11 @@ log('Server starting')
 // Usage:
 //        assert_path_body('/healthcheck', 'Ok')
 //
-var test_i = 1
-var passed = 0
-var failed = 0
-var assert = (truthy, y, z) => {
-  var x = indent(test_i+' ', 10, '.')
+let test_i = 1
+let passed = 0
+let failed = 0
+const assert = (truthy, y, z) => {
+  let x = indent(test_i+' ', 10, '.')
   y = indent(' '+y+' ', 50, '.')
   if (truthy) {
     success('✔ ' + x + indent(' PASSED ', 20, '.') + y)
@@ -231,8 +229,8 @@ var assert = (truthy, y, z) => {
   }
   test_i++
 }
-var prepare_assert_path_cb = (path, cb, method, data) => {
-  var req = http.request({
+const prepare_assert_path_cb = (path, cb, method, data) => {
+  let req = http.request({
     port: port,
     method: method || 'GET',
     path: path,
@@ -244,7 +242,7 @@ var prepare_assert_path_cb = (path, cb, method, data) => {
   if (data) req.write(data)
   req.end()
 }
-var assert_path_body = (path, body_to_assert, cb, method, data) => {
+const assert_path_body = (path, body_to_assert, cb, method, data) => {
   prepare_assert_path_cb(path, (body) => {
     assert(
       body == body_to_assert, path,
