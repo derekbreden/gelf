@@ -38,7 +38,7 @@ const check_ls = () => {
 check_ls()
 
 
-const http = require('http')
+const http = require('http') // #374a60 #f9ffff #f0f9ff #cbe9fc #a7ddff #374a60 #5d88ba #e3f0f9
 let server = http.createServer((req, res) => {
   res.end(`
     <head>
@@ -48,31 +48,40 @@ let server = http.createServer((req, res) => {
       *:focus { outline: 0;}
       body { padding: 0; margin: 0;
         overflow: hidden;}
-      iframe { width: 100%; height: 50%; border: 0;}
-        
-      editor, console, editor > htmlarea { padding: 10px;
-        font-family: Courier New; font-size: 12px; font-weight: 700;
-        color: #00326c; }
-      editor, console { position: absolute;
-        background: #f0f9ff;
-        border-top: 1px solid #7ab3f5;
-        bottom: 0px; left: 0px;
-        width: 65%; height: 50%;
+      iframe, gelf { width: 100%; height: 50%; border: 0; display: block;}
+      gelf { display: flex; flex-direction: column;}
+      gelf > top { height: 32px;
+        background: rgba(0, 0, 0, 0.85);}
+      gelf > bottom { height: calc(100% - 32px);
         display: flex;}
-      editor { border-right: 1px solid #7ab3f5;}
-      console { left: auto; right: 0px;
-        width: 35%; }
-      editor > *{ flex: 1;}
-      editor > htmlarea { resize: none;
+      bottom > * { padding: 10px;
+        font-family: Monaco, Courier New; font-size: 10px;
+        color: #FFF;
+        background: rgba(0, 0, 0, 0.75); }
+      tree { width: 300px;}
+      editor { width: calc(100% - 300px - 400px);}
+      console { width: 400px;}
+      tree, editor, console { overflow-y: scroll;
+        position: relative; }
+      *::-webkit-scrollbar {
+        background: rgba(0, 0, 0, 0.25); 
+        width: 8px;}
+      *::-webkit-scrollbar-thumb {
+        background: #000;
+        border-radius: 4px; }
+      editor { 
         white-space: pre;
-        color: #005;
-        background: #f9ffff;
-        border-left: 1px solid #7ab3f5;
-        margin-top: -10px; margin-right: -10px; margin-bottom: -10px;}
-      editor > htmlarea > s1 { color: #006eee;}
-      editor > htmlarea > s2 { color: #004fab;}
-      editor > htmlarea > s3 { color: #666;}
-      editor > tree { flex: .5;}
+        resize: none;}
+      editor > s1 { color: #34bbc8;}
+      editor > s2 { color: #34bc26;}
+      editor > s3 { color: #cccccc;}
+      console > * { position: absolute;}
+      console > before { z-index: 0;}
+      console > htmlarea { z-index: 1;
+        width: calc(100% - 20px); height: calc(100% - 20px); }
+      console > htmlarea, console > htmlarea > * { word-break: break-all;}
+      console > htmlarea > s4 {}
+      console > after { z-index: 2;}
       @media screen and (max-width: 480px) {
         editor, console { position: relative;}
         iframe, editor, console { height: auto; width: auto;}
@@ -87,15 +96,62 @@ let server = http.createServer((req, res) => {
     </head>
     <body>
     <iframe></iframe>
-    <editor>
-      <tree>gelf /<br>&nbsp; baz.py</tree>
-      <htmlarea contenteditable="true">class <s1>Foo</s1>
-  def <s1>bar</s1>():
-    <s3># just passing by</s3>
-    <s2>pass</s2></htmlarea></editor>
-    <console>$ &#9608;</console>
-    <script> var h = window.location.hostname;
-    document.querySelector('iframe').src='http://'+h+':${app_port}'</script>
+    <gelf>
+      <top>
+      </top>
+      <bottom>
+        <tree>gelf /<br>&nbsp; baz.py</tree>
+        <editor contenteditable="true">class <s1>Foo</s1>
+    def <s1>bar</s1>():
+      <s3># just passing by</s3>
+      <s2>pass</s2></editor>
+        <console><before>$  <s4>&#9608;</s4></before><htmlarea contenteditable="true"></htmlarea><after></after></console>
+      </bottom>
+    </gelf>
+    <script>
+    /* IFRAME */
+    var h = window.location.hostname;
+    document.querySelector('iframe').src='http://'+h+':${app_port}'
+    
+    /* 3RD PARTY */
+    function placeCaretAtEnd(el) {
+      el.focus()
+      if (typeof window.getSelection != "undefined"
+      && typeof document.createRange != "undefined") {
+        var range = document.createRange()
+        range.selectNodeContents(el)
+        range.collapse(false)
+        var sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
+      } else if (typeof document.body.createTextRange != "undefined") {
+        var textRange = document.body.createTextRange()
+        textRange.moveToElementText(el)
+        textRange.collapse(false)
+        textRange.select()
+      }
+    }
+    
+    /* CONSOLE */
+    var blinkCursor = 0
+    var content = '   '
+    var $c = document.querySelector('console htmlarea')
+    $c.addEventListener('keypress', function(e){
+      content=$c.innerHTML
+    })
+    $c.addEventListener('keydown', function(e){
+      content=$c.innerHTML
+      placeCaretAtEnd($c)
+      console.warn(e.keyCode)
+      if ([38,37,8].indexOf(e.keyCode) !== -1) {
+        e.preventDefault() }})
+    $c.addEventListener('focus', function(e){
+      $c.innerHTML=content
+      blinkCursor = setInterval(function(){
+        /* toggle class for cursor blink */},1000) })
+    $c.addEventListener('blur', function(){
+      clearInterval(blinkCursor) })
+    </script>
     </body>
 `)
 })
